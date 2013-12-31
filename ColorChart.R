@@ -1,8 +1,12 @@
-# efg, Stowers Institute for Medical Research
-# efg's Research Notes:
-#   http://research.stowers-institute.org/efg/R/Color/Chart
+# Color Chart in R
+# (Tested in R version 3.0.2)
 #
-# 6 July 2004.  Modified 23 May 2005.
+# Earl F Glynn
+# UMKC Center for Health Insights
+# 30 December 2013.
+#
+# Original 2005 version completed while at
+# Stowers Institute for Medical Research
 
 pdf("ColorChart.pdf", width=6, height=10)
 
@@ -10,8 +14,7 @@ pdf("ColorChart.pdf", width=6, height=10)
 oldparameters <- par(mar=c(1,1,2,1), mfrow=c(2,1))
 
 # Be cautious in case definition of "colors" changes.
-# Use some hard-coded constants since this is not expected
-# to change.
+# Use hard-coded constant since this is not expected to change.
 stopifnot(length(colors()) == 657)
 
 # 0. Setup
@@ -44,7 +47,7 @@ rowCount <- 27
 plot( c(1,colCount), c(0,rowCount), type="n", ylab="", xlab="",
      axes=FALSE, ylim=c(rowCount,0))
 title("R colors")
-mtext("http://research.stowers-institute.org/efg/R/Color/Chart",
+mtext("https://github.com/EarlGlynn/colorchart/raw/master/ColorChart.pdf",
       cex=0.6)
 
 for (j in 0:(rowCount-1))
@@ -84,7 +87,7 @@ for (j in 0:(rowCount-1))
 }
 
 
-# 2. Create 7-page color chart showing rectangle block of color, along with
+# 2. Create 7-page color chart showing rectangle blocks of color, along with
 # index, color name, and RGB constants in hex and decimal.
 
 # Define string vector of RGB hex and decimal constants for given color
@@ -94,8 +97,9 @@ for (j in 0:(rowCount-1))
 #     [1] "#FFFF00   255 255   0"
 GetColorHexAndDecimal <- function(color)
 {
-  c <- col2rgb(color)
-  sprintf("#%02X%02X%02X   %3d %3d %3d", c[1],c[2],c[3], c[1], c[2], c[3])
+  clr <- col2rgb(color)
+  sprintf("#%02X%02X%02X   %3d %3d %3d",
+          clr[1],clr[2],clr[3], clr[1],clr[2],clr[3])
 }
 
 # Restore, change and save graphics parameters
