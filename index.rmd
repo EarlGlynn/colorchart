@@ -1,0 +1,197 @@
+---
+title: "R colors"
+author: "Earl F Glynn"
+output: html_document
+---
+
+```{r, echo=FALSE}
+# Color Chart in R
+# (Tested in R version 3.1.2)
+#
+# Earl F Glynn
+# UMKC Center for Health Insights
+# 2013-12-30 Store in GitHub.
+# 2015-02-07 Create .Rmd version
+#
+# Original 2005 version completed while at
+# Stowers Institute for Medical Research
+
+# Be cautious in case definition of "colors" changes.
+# Use hard-coded constant since this is not expected to change.
+stopifnot(length(colors()) == 657)
+
+# 0. Setup
+
+# For a given color, define a text color that will have good contrast.
+#   Examples:
+#     > SetTextContrastColor("white")
+#     [1] "black"
+#     > SetTextContrastColor("black")
+#     [1] "white"
+#     > SetTextContrastColor("red")
+#     [1] "white"
+#     > SetTextContrastColor("yellow")
+#     [1] "black"
+SetTextContrastColor <- function(color)
+{
+  ifelse( mean(col2rgb(color)) > 127, "black", "white")
+}
+
+# Define this array of text contrast colors that correponds to each
+# member of the colors() array.
+TextContrastColor <- unlist( lapply(colors(), SetTextContrastColor) )
+```
+See .Rmd file for how to create contrasting colors for labels in color boxes below.
+
+## Matrix of R colors in index number order
+
+Plot matrix of R colors, in index order, 25 per row.
+This example plots each row of rectangles one at a time.
+
+```{r, echo=FALSE, fig.width=8, fig.height=7}
+par(mar=c(1,1,2,1))
+colCount <- 25  # number per row
+rowCount <- 27
+
+plot( c(1,colCount), c(0,rowCount), type="n", ylab="", xlab="",
+     axes=FALSE, ylim=c(rowCount,0))
+title("R colors")
+
+for (j in 0:(rowCount-1))
+{
+  base <- j*colCount
+  remaining <- length(colors()) - base
+  RowSize <- ifelse(remaining < colCount, remaining, colCount)
+  rect((1:RowSize)-0.5,j-0.5, (1:RowSize)+0.5,j+0.5,
+    border="black",
+    col=colors()[base + (1:RowSize)])
+  text((1:RowSize), j, paste(base + (1:RowSize)), cex=0.7,
+       col=TextContrastColor[base + (1:RowSize)])
+}
+```
+
+## Matrix of R colors in hue order
+
+Plot matrix of R colors, in "hue" order, 25 per row.
+This example plots each rectangle one at a time.
+
+```{r, echo=FALSE, fig.width=8, fig.height=7}
+par(mar=c(1,1,2,1))
+RGBColors <- col2rgb(colors()[1:length(colors())])
+HSVColors <- rgb2hsv( RGBColors[1,], RGBColors[2,], RGBColors[3,], maxColorValue=255)
+HueOrder  <- order( HSVColors[1,], HSVColors[2,], HSVColors[3,] )
+
+plot(0, type="n", ylab="", xlab="",
+     axes=FALSE, ylim=c(rowCount,0), xlim=c(1,colCount))
+
+title("R colors -- Sorted by Hue, Saturation, Value")
+
+for (j in 0:(rowCount-1))
+{
+  for (i in 1:colCount)
+  {
+    k <- j*colCount + i
+    if (k <= length(colors()))
+    {
+      rect(i-0.5,j-0.5, i+0.5,j+0.5, border="black", col=colors()[ HueOrder[k] ])
+      text(i,j, paste(HueOrder[k]), cex=0.7, col=TextContrastColor[ HueOrder[k] ])
+    }
+  }
+}
+```
+
+## R color chart
+
+Create 7-page color chart showing rectangle blocks of color, along with
+index, color name, and RGB constants in hex and decimal.
+
+Define string vector of RGB hex and decimal constants for given color
+as a string.
+
+```{r}
+GetColorHexAndDecimal <- function(color)
+{
+  clr <- col2rgb(color)
+  sprintf("#%02X%02X%02X   %3d %3d %3d",
+          clr[1],clr[2],clr[3], clr[1],clr[2],clr[3])
+}
+```
+
+ Example:
+```{r}
+GetColorHexAndDecimal("yellow")
+```
+
+```{r, echo=FALSE}
+par(mar=c(1,1,1,1))
+```
+
+Prepare text vectors to be displayed, in addition to color names.
+
+```{r}
+index <- paste(1:length(colors()))
+HexAndDec <- unlist( lapply(colors(), GetColorHexAndDecimal) )
+
+PerColumn <- 50
+PerPage   <- 2*PerColumn
+```
+
+Plot a column of color rectangles at a time for each page.
+
+```{r, echo=FALSE, fig.width=8, fig.height=8}
+par(mar=c(1,1,2,1))
+for (page in 1: (trunc( (length(colors()) + (PerPage-1)) / PerPage) )  )
+{
+
+  plot(0, type="n", ylab="", xlab="",
+       axes=FALSE, ylim=c(PerColumn,0), xlim=c(0,1))
+  #title("R colors")
+  mtext(paste("page ", page), SOUTH<-1, adj=1, line=-1)
+
+  base <- PerPage*(page-1)
+
+  # Column 1
+  remaining <- length(colors()) - base
+  ColumnSize <- ifelse(remaining < PerColumn, remaining, PerColumn)
+
+  rect(0.00, 0:(ColumnSize-1),
+       0.49, 1:ColumnSize,
+       border="black",
+       col=colors()[(base+1):(base+ColumnSize)])
+  text(0.045, 0.45+(0:(ColumnSize-1)), adj=1,
+       index[(base+1):(base+ColumnSize)], cex=0.6,
+       col=TextContrastColor[(base+1):(base+ColumnSize)])
+  text(0.06, 0.45+(0:(ColumnSize-1)), adj=0,
+       colors()[(base+1):(base+ColumnSize)], cex=0.6,
+       col=TextContrastColor[(base+1):(base+ColumnSize)])
+  save <- par(family="mono")  # use mono-spaced font with number columns
+  text(0.25, 0.45+(0:(ColumnSize-1)), adj=0,
+       HexAndDec[(base+1):(base+ColumnSize)], cex=0.6,
+       col=TextContrastColor[(base+1):(base+ColumnSize)])
+  par(save)
+
+  # Column 2
+  if (remaining > PerColumn)
+  {
+    remaining <- remaining - PerColumn
+    ColumnSize <- ifelse(remaining < PerColumn, remaining, PerColumn)
+    rect(0.51, 0:(ColumnSize-1),
+         1.00, 1:ColumnSize,
+         border="black",
+         col=colors()[(base+PerColumn+1):(base+PerColumn+ColumnSize)])
+    text(0.545, 0.45+(0:(ColumnSize-1)), adj=1,
+         index[(base+PerColumn+1):(base+PerColumn+ColumnSize)], cex=0.6,
+         col=TextContrastColor[(base+PerColumn+1):(base+PerColumn+ColumnSize)])
+    text(0.56, 0.45+(0:(ColumnSize-1)), adj=0,
+         colors()[(base+PerColumn+1):(base+PerColumn+ColumnSize)], cex=0.6,
+         col=TextContrastColor[(base+PerColumn+1):(base+PerColumn+ColumnSize)])
+    save <- par(family="mono")
+    text(0.75, 0.45+(0:(ColumnSize-1)), adj=0,
+         HexAndDec[(base+PerColumn+1):(base+PerColumn+ColumnSize)], cex=0.6,
+         col=TextContrastColor[(base+PerColumn+1):(base+PerColumn+ColumnSize)])
+    par(save)
+  }
+
+}
+```
+
